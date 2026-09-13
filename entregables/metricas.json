@@ -1,0 +1,46 @@
+{
+  "aleatorio-space-invaders": {
+    "videos": [
+      "entregables/videos/aleatorio-space-invaders-episode-0.mp4",
+      "entregables/videos/aleatorio-space-invaders-episode-1.mp4",
+      "entregables/videos/aleatorio-space-invaders-episode-2.mp4"
+    ],
+    "episodios": [
+      {
+        "pasos": 325,
+        "recompensa_total": 65.0,
+        "terminated": true,
+        "truncated": false,
+        "episodio": 0
+      },
+      {
+        "pasos": 601,
+        "recompensa_total": 215.0,
+        "terminated": true,
+        "truncated": false,
+        "episodio": 1
+      },
+      {
+        "pasos": 434,
+        "recompensa_total": 50.0,
+        "terminated": true,
+        "truncated": false,
+        "episodio": 2
+      }
+    ]
+  },
+  "regla-simple-space-invaders": {
+    "videos": [
+      "entregables/videos/regla-simple-space-invaders-episode-0.mp4"
+    ],
+    "episodios": [
+      {
+        "pasos": 1121,
+        "recompensa_total": 380.0,
+        "terminated": true,
+        "truncated": false,
+        "episodio": 0
+      }
+    ]
+  }
+}
