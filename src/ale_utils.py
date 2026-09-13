@@ -142,3 +142,59 @@ def ejecutar_episodio(
         "terminated": bool(terminated),
         "truncated": bool(truncated),
     }
+
+
+def generar_video_agente(
+    nombre_entorno: str,
+    funcion_agente: Callable,
+    video_folder: str,
+    name_prefix: str,
+    n_episodios: int = 1,
+    max_steps: int = 10000,
+    seed: Optional[int] = None,
+    **kwargs,
+) -> dict:
+    """Graba n_episodios de un agente y retorna las rutas de los videos y sus métricas.
+
+    Crea el entorno con grabación habilitada, ejecuta los episodios y cierra el
+    entorno: env.close() es indispensable para que RecordVideo vuelque el último
+    .mp4 a disco.
+
+    Args:
+        nombre_entorno: id del entorno de Gymnasium.
+        funcion_agente: política con firma (observation, env) -> accion.
+        video_folder: carpeta destino de los videos.
+        name_prefix: prefijo de los archivos generados.
+        n_episodios: cantidad de episodios completos a grabar.
+        max_steps: corte de seguridad por episodio.
+        seed: semilla del primer reset; los episodios siguientes usan seed + i.
+        **kwargs: parámetros extra del entorno.
+
+    Returns:
+        dict con videos (rutas de los .mp4) y episodios (métricas por episodio).
+    """
+    carpeta = Path(video_folder)
+    env = crear_entorno(
+        nombre_entorno,
+        video_folder=str(carpeta),
+        name_prefix=name_prefix,
+        **kwargs,
+    )
+
+    episodios = []
+    try:
+        for i in range(n_episodios):
+            metricas = ejecutar_episodio(
+                env,
+                funcion_agente,
+                max_steps=max_steps,
+                seed=None if seed is None else seed + i,
+            )
+            metricas["episodio"] = i
+            episodios.append(metricas)
+    finally:
+        env.close()
+
+    videos = sorted(str(p) for p in carpeta.glob(f"{name_prefix}*.mp4"))
+
+    return {"videos": videos, "episodios": episodios}
