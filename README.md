@@ -54,6 +54,22 @@ Para el notebook:
 jupyter notebook notebooks/laboratorio5_ale_space_invaders.ipynb
 ```
 
+## Resultados
+
+Episodios grabados con semillas 42, 43 y 44 (`entregables/metricas.json`):
+
+| Agente | Video | Pasos sobrevividos | Recompensa total |
+| --- | --- | ---: | ---: |
+| Aleatorio | `aleatorio-space-invaders-episode-0.mp4` | 325 | 65 |
+| Aleatorio | `aleatorio-space-invaders-episode-1.mp4` | 601 | 215 |
+| Aleatorio | `aleatorio-space-invaders-episode-2.mp4` | 434 | 50 |
+| Regla simple | `regla-simple-space-invaders-episode-0.mp4` | 1121 | 380 |
+
+Sobre cinco episodios por agente, el aleatorio promedia 109.0 de recompensa y el
+de regla simple 391.0. Las corridas son reproducibles: además de `reset(seed=...)`
+se siembra `action_space.seed(...)`, que es el generador del que muestrea el
+agente aleatorio.
+
 ## Contenido del notebook
 
 1. Configuración e importaciones, semillas fijas.
