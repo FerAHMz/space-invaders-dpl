@@ -27,7 +27,7 @@ CORRIDAS = [
     {
         "name_prefix": "aleatorio-space-invaders",
         "funcion_agente": agente_aleatorio,
-        "n_episodios": 1,
+        "n_episodios": 3,
     },
     {
         "name_prefix": "regla-simple-space-invaders",

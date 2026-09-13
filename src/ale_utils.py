@@ -124,6 +124,11 @@ def ejecutar_episodio(
         dict con pasos, recompensa_total (return del episodio), terminated y truncated.
     """
     observation, _ = env.reset(seed=seed)
+    if seed is not None:
+        # reset(seed) siembra el RNG del entorno pero no el del espacio de
+        # acción, del que muestrea el agente aleatorio: hay que sembrarlo aparte
+        # para que la corrida sea reproducible.
+        env.action_space.seed(seed)
 
     pasos = 0
     recompensa_total = 0.0
