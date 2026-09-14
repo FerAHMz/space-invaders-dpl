@@ -7,3 +7,4 @@ imageio-ffmpeg==0.6.0
 moviepy==2.2.1
 matplotlib==3.11.2
 jupyter==1.1.1
+torch==2.14.0
