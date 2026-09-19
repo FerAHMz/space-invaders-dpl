@@ -28,6 +28,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from agente import AgenteRainbow, elegir_dispositivo
 from ale_utils import fijar_semillas
 from config import (
+    CAPACIDAD_REPLAY,
     DIR_LOGS,
     DIR_MODELOS,
     FRECUENCIA_ENTRENAMIENTO,
@@ -82,6 +83,12 @@ def main() -> None:
                         help="pasos entre evaluaciones greedy")
     parser.add_argument("--eval-episodios", type=int, default=3)
     parser.add_argument("--guardar-cada", type=int, default=50_000)
+    parser.add_argument("--capacidad-replay", type=int, default=CAPACIDAD_REPLAY,
+                        help="transiciones del replay buffer. El valor por defecto esta "
+                             "dimensionado para 16 GB de RAM; con 32 GB o mas conviene subirlo "
+                             "a 1000000, que es el del paper de Rainbow: un buffer mas grande "
+                             "conserva experiencia mas antigua y diversa, lo que reduce el "
+                             "sobreajuste a la politica reciente. Cuesta ~7 GB de RAM.")
     parser.add_argument("--inicio-aprendizaje", type=int, default=INICIO_APRENDIZAJE,
                         help="pasos de recoleccion antes del primer gradiente")
     parser.add_argument("--reanudar", action="store_true",
@@ -101,7 +108,7 @@ def main() -> None:
     checkpoint = DIR_MODELOS / f"{args.etiqueta}.pt"
     mejor_checkpoint = DIR_MODELOS / f"{args.etiqueta}_mejor.pt"
 
-    agente = AgenteRainbow(n_acciones, dispositivo)
+    agente = AgenteRainbow(n_acciones, dispositivo, capacidad_replay=args.capacidad_replay)
     paso_inicial, mejor_promedio = 0, -float("inf")
     if args.reanudar and checkpoint.exists():
         punto = torch.load(checkpoint, map_location=dispositivo, weights_only=False)
