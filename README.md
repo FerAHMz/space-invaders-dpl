@@ -1,23 +1,85 @@
-# Laboratorio 5 — Agentes en el Arcade Learning Environment (ALE)
+# Space Invaders — Agente de Reinforcement Learning
 
-Infraestructura mínima para conectar un agente a un entorno Atari 2600 a través de
-Gymnasium + ALE, ejecutar episodios completos y grabar video de las partidas.
-El juego objetivo es `ALE/SpaceInvaders-v5`. En este laboratorio no se entrena
-ningún agente: se validan las piezas (creación de entorno, política, loop de
-episodio y grabación) que después servirán de base para entrenar.
+Proyecto 2 del curso CC3092 (Deep Learning y Sistemas Inteligentes, UVG).
+Entrena un agente de RL capaz de jugar `ALE/SpaceInvaders-v5` y contiene todo el
+pipeline: preprocesamiento del entorno, entrenamiento, evaluación con política
+greedy, generación del video entregable y curvas de entrenamiento.
+
+El repositorio parte del Laboratorio 5 (infraestructura de ALE y agentes
+baseline aleatorio y de regla simple), que se conserva como punto de
+comparación.
+
+## El agente
+
+**Rainbow-lite**: Double DQN + Dueling + replay priorizado + retornos de n pasos
++ NoisyNet + DQN distribucional (C51), implementado desde cero en PyTorch.
+
+| Componente | Decisión | Justificación |
+| --- | --- | --- |
+| Algoritmo base | DQN | La recompensa de Space Invaders es dispersa y el espacio de acción discreto y pequeño (6); los métodos off-policy con replay aprovechan mucho mejor cada partida que un on-policy como PPO, que descarta la experiencia tras cada actualización. |
+| Double DQN | Sí | El `max` de DQN estándar sobreestima los valores Q de forma sistemática; separar la selección (red online) de la evaluación (red objetivo) corta ese sesgo. |
+| Dueling | Sí | En la mayoría de estados de Space Invaders conviene disparar sin importar mucho la acción exacta; separar V(s) de A(s,a) deja que la red aprenda el valor del estado sin estimar las 6 acciones por separado. |
+| Distribucional (C51) | 51 átomos en [-10, 10] | Aprender la distribución del retorno en vez de su media da un gradiente mucho más informativo; es el ingrediente con mayor impacto individual en las ablaciones de Rainbow. |
+| Replay priorizado | α = 0.5, β: 0.4 → 1.0 | Muestrea con más frecuencia las transiciones de mayor error TD (destruir la nave nodriza, morir), que son raras y las que más enseñan. |
+| n-step | n = 3 | Propaga la recompensa hacia atrás 3 pasos por actualización en vez de 1, lo que acelera mucho el aprendizaje con recompensa dispersa. |
+| Exploración | NoisyNet (σ₀ = 0.5), sin ε-greedy | El ruido vive en los pesos, así que el agente explora con estrategias coherentes durante un episodio en vez de dar pasos aleatorios sueltos, y la red puede reducir por sí sola la exploración donde ya domina. No hay calendario de ε que ajustar. |
+
+### Arquitectura
+
+Entrada `(4, 84, 84)` en `uint8`, normalizada a `[0,1]` dentro de la red.
+
+```
+Conv2d(4 -> 32, k=8, s=4) + ReLU      ->  (32, 20, 20)
+Conv2d(32 -> 64, k=4, s=2) + ReLU     ->  (64,  9,  9)
+Conv2d(64 -> 64, k=3, s=1) + ReLU     ->  (64,  7,  7)
+Flatten                               ->  3136
+   ├── NoisyLinear(3136 -> 512) + ReLU -> NoisyLinear(512 -> 51)        V(s)
+   └── NoisyLinear(3136 -> 512) + ReLU -> NoisyLinear(512 -> 6*51)      A(s,a)
+Q(s,a) = softmax( V + (A - media_a A) )     # distribución sobre 51 átomos
+```
+
+6.87 M parámetros. La torre convolucional es la de Mnih et al. (2015), que es la
+que corresponde a una entrada de 84×84.
+
+### Hiperparámetros
+
+| Parámetro | Valor | Nota |
+| --- | --- | --- |
+| Optimizador | Adam, lr = 6.25e-5, eps = 1.5e-4 | El eps por defecto de PyTorch (1e-8) inestabiliza la pérdida distribucional. |
+| Función de pérdida | Entropía cruzada entre distribución objetivo proyectada y predicha | Equivale a la KL; su valor por muestra es el error TD que alimenta PER. |
+| Descuento γ | 0.99 | |
+| Batch | 64 | En MPS el costo por paso lo domina el lanzamiento de kernels, no la aritmética: 64 muestras cuestan casi lo mismo que 32 (41.6 vs 43.9 pasos/s medidos). |
+| Replay buffer | 300 000 transiciones | Con frames comprimidos ocupa ~2.1 GB; guardar las pilas completas serían ~17 GB. |
+| Inicio del aprendizaje | 20 000 pasos | |
+| Frecuencia de gradiente | cada 4 pasos de entorno | |
+| Actualización de la red objetivo | cada 8 000 pasos | |
+| Recorte de gradiente | norma 10 | |
 
 ## Estructura
 
 ```
-src/                      módulo y etapas del pipeline
-  config.py               rutas, identificadores de entorno y constantes
-  ale_utils.py            funciones reutilizables para interactuar con ALE
-  01_generar_videos.py    etapa 1: graba los videos entregables y sus métricas
-  run_pipeline.py         orquesta las etapas del pipeline
-notebooks/                notebook del laboratorio (investigación y resultados)
-entregables/videos/       videos .mp4 generados
-entregables/metricas.json métricas por episodio de cada video
-codebook.md               descripción de observaciones, acciones y recompensa
+src/
+  config.py                   rutas, ids de entorno e hiperparámetros
+  ale_utils.py                utilidades del Laboratorio 5 (crear_entorno, ejecutar_episodio, ...)
+  wrappers.py                 cadena de preprocesamiento (entrenamiento y evaluación)
+  modelos.py                  NoisyLinear y la CNN dueling distribucional
+  replay.py                   árbol de sumas y replay priorizado con n-step
+  agente.py                   agente Rainbow-lite: actuar, aprender, guardar/cargar
+  01_generar_videos.py        etapa 1: baselines del laboratorio
+  02_entrenar_dqn.py          etapa 2: entrenamiento
+  03_evaluar_agente.py        etapa 3: evaluación greedy (config. de la competencia)
+  04_generar_video_agente.py  etapa 4: video del agente entrenado
+  05_graficar_curvas.py       etapa 5: curvas de entrenamiento
+  run_pipeline.py             orquestador
+notebooks/                    notebooks del laboratorio y del proyecto
+modelos/                      checkpoints (.pt); se versiona solo el final
+logs/                         CSV por episodio y por evaluación de cada iteración
+entregables/
+  videos/                     .mp4 de los agentes
+  figuras/                    curvas de entrenamiento
+  evaluacion.json             evaluación final del agente entrenado
+  metricas.json               métricas de los baselines del laboratorio
+codebook.md                   observaciones, acciones, recompensa y variables registradas
 ```
 
 ## Entorno de ejecución
@@ -39,22 +101,62 @@ pip install -r requirements.txt
 ```
 
 Las ROMs de Atari vienen incluidas en `ale-py` desde la versión 0.10, por lo que
-no hay que descargarlas aparte.
+no hay que descargarlas aparte. El entrenamiento detecta automáticamente CUDA,
+MPS (Apple Silicon) o CPU; se puede forzar con `--dispositivo`.
 
-## Ejecución
+## Reproducir los resultados
 
-```bash
-python src/run_pipeline.py          # genera todos los videos entregables
-python src/01_generar_videos.py     # solo la etapa de grabación
-```
-
-Para el notebook:
+### 1. Evaluar el modelo entregado (no requiere entrenar)
 
 ```bash
-jupyter notebook notebooks/laboratorio5_ale_space_invaders.ipynb
+python src/03_evaluar_agente.py --modelo modelos/rainbow_space_invaders.pt
+python src/04_generar_video_agente.py --modelo modelos/rainbow_space_invaders.pt
 ```
 
-## Resultados
+La primera corre los 5 episodios greedy de la competencia y escribe
+`entregables/evaluacion.json`; la segunda graba los `.mp4` con exactamente la
+misma configuración de entorno.
+
+### 2. Entrenar desde cero
+
+```bash
+python src/02_entrenar_dqn.py --pasos 4000000 --etiqueta rainbow_v1
+```
+
+Cada paso de agente son 4 frames de emulación, así que 4 M pasos ≈ 16 M frames.
+En un MacBook Pro M4 Pro (MPS) la corrida avanza a ~200 pasos/s, es decir unas
+6 horas. El entrenamiento guarda un checkpoint cada 50 000 pasos y se puede
+retomar con `--reanudar`; el replay buffer no se persiste (pesa gigabytes), así
+que al reanudar se vuelve a llenar con la política ya aprendida.
+
+### 3. Pipeline completo
+
+```bash
+python src/run_pipeline.py                 # evalúa, graba video y grafica curvas
+python src/run_pipeline.py --entrenar      # incluye el entrenamiento
+python src/run_pipeline.py --baselines     # regenera los videos del laboratorio 5
+```
+
+## Cargar los pesos del modelo final
+
+El checkpoint guarda, además de los pesos, la configuración de preprocesamiento
+con la que fue entrenado, de modo que no puede desalinearse con la evaluación:
+
+```python
+import sys; sys.path.insert(0, "src")
+from agente import AgenteRainbow, elegir_dispositivo
+from wrappers import crear_entorno_evaluacion
+
+dispositivo = elegir_dispositivo()
+agente = AgenteRainbow.cargar("modelos/rainbow_space_invaders.pt", dispositivo)
+print(agente.preprocesamiento)   # frame skip, tamaño, apilado, sticky actions
+
+env = crear_entorno_evaluacion()
+obs, _ = env.reset(seed=2026)
+accion = agente.actuar(obs, entrenando=False)   # entrenando=False => greedy, sin ruido
+```
+
+## Baselines del Laboratorio 5
 
 Episodios grabados con semillas 42, 43 y 44 (`entregables/metricas.json`):
 
@@ -69,14 +171,3 @@ Sobre cinco episodios por agente, el aleatorio promedia 109.0 de recompensa y el
 de regla simple 391.0. Las corridas son reproducibles: además de `reset(seed=...)`
 se siembra `action_space.seed(...)`, que es el generador del que muestrea el
 agente aleatorio.
-
-## Contenido del notebook
-
-1. Configuración e importaciones, semillas fijas.
-2. El Arcade Learning Environment: qué es, Stella y las variantes de un mismo juego.
-3. Espacios de observación y acción de `ALE/SpaceInvaders-v5` frente a `CartPole-v1`.
-4. Observación en RAM y wrappers `AtariPreprocessing` / `FrameStackObservation`.
-5. Módulo de funciones: `crear_entorno`, `agente_aleatorio`, `agente_regla_simple`,
-   `ejecutar_episodio`, `generar_video_agente`.
-6. Generación de los videos y reporte de pasos sobrevividos y recompensa total.
-7. Comparación agente aleatorio vs. agente de regla simple y discusión.
