@@ -67,7 +67,13 @@ def evaluar(agente: AgenteRainbow, n_episodios: int, semilla: int, max_pasos: in
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--pasos", type=int, default=2_000_000,
-                        help="pasos de agente a ejecutar (cada uno son 4 frames)")
+                        help="pasos de agente a EJECUTAR en esta invocacion (cada uno son 4 frames)")
+    parser.add_argument("--hasta", type=int, default=None,
+                        help="objetivo ABSOLUTO de pasos. A diferencia de --pasos, no se suma a "
+                             "lo ya entrenado: entrenar hasta 12M sigue siendo 12M aunque la "
+                             "corrida se reanude varias veces. Es lo que hay que usar cuando la "
+                             "sesion se puede cortar (Colab), porque ademas mantiene estable el "
+                             "calendario de beta de PER entre reanudaciones.")
     parser.add_argument("--etiqueta", type=str, default="rainbow",
                         help="identificador de la iteracion; nombra logs y checkpoints")
     parser.add_argument("--dispositivo", type=str, default=None, help="cuda | mps | cpu")
@@ -121,7 +127,12 @@ def main() -> None:
     puntaje_partida = 0.0
     pasos_partida = 0
     t0 = time.time()
-    pasos_totales = paso_inicial + args.pasos
+    pasos_totales = args.hasta if args.hasta is not None else paso_inicial + args.pasos
+    if pasos_totales <= paso_inicial:
+        print(f"Nada que hacer: ya se entrenaron {paso_inicial:,} pasos (objetivo {pasos_totales:,})")
+        env.close()
+        return
+    print(f"Entrenando del paso {paso_inicial:,} al {pasos_totales:,} en {dispositivo}")
 
     for paso in range(paso_inicial, pasos_totales):
         accion = agente.actuar(obs, entrenando=True)
