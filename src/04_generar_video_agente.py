@@ -18,7 +18,7 @@ from config import (
     CHECKPOINT_FINAL,
     DIR_ENTREGABLES,
     DIR_VIDEOS,
-    MAX_STEPS,
+    MAX_STEPS_EVALUACION,
     RAIZ,
     SEMILLA_EVALUACION,
 )
@@ -44,7 +44,7 @@ def grabar_partidas(
             obs, _ = env.reset(seed=semilla + i)
             env.action_space.seed(semilla + i)
             total, pasos, terminated, truncated = 0.0, 0, False, False
-            while pasos < MAX_STEPS and not (terminated or truncated):
+            while pasos < MAX_STEPS_EVALUACION and not (terminated or truncated):
                 accion = agente.actuar(obs, entrenando=False)
                 obs, recompensa, terminated, truncated, _ = env.step(accion)
                 total += float(recompensa)

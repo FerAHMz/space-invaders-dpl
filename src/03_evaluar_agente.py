@@ -21,7 +21,7 @@ from config import (
     CHECKPOINT_FINAL,
     DIR_ENTREGABLES,
     EPISODIOS_EVALUACION,
-    MAX_STEPS,
+    MAX_STEPS_EVALUACION,
     SEMILLA_EVALUACION,
 )
 from wrappers import crear_entorno_evaluacion
@@ -31,7 +31,7 @@ def evaluar_agente(
     ruta_modelo: Path,
     n_episodios: int = EPISODIOS_EVALUACION,
     semilla: int = SEMILLA_EVALUACION,
-    max_pasos: int = MAX_STEPS,
+    max_pasos: int = MAX_STEPS_EVALUACION,
     dispositivo: str = None,
 ) -> dict:
     dev = elegir_dispositivo(dispositivo)

@@ -81,3 +81,8 @@ MAX_GRAD_NORM = 10.0
 # Evaluacion (identica a la de la competencia: 5 episodios, politica greedy).
 EPISODIOS_EVALUACION = 5
 SEMILLA_EVALUACION = 2026
+# Corte propio del loop de evaluacion. Se pone por encima del limite del propio
+# entorno (max_num_frames_per_episode=108000 frames = 27000 pasos de agente con
+# frame_skip=4) para que sea el entorno, y no este loop, el que decida cuando
+# truncar: una partida larga y buena no debe cortarse artificialmente.
+MAX_STEPS_EVALUACION = 30_000
