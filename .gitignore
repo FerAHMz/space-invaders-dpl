@@ -7,3 +7,8 @@ __pycache__/
 .DS_Store
 .env*
 .claude/settings.local.json
+
+# Checkpoints intermedios y logs crudos del entrenamiento: se regeneran y pesan
+# decenas de MB. El checkpoint final se versiona explicitamente con `git add -f`.
+modelos/*.pt
+logs/*.log
