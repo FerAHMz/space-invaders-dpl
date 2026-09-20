@@ -1,0 +1,46 @@
+{
+  "episodios": [
+    {
+      "episodio": 0,
+      "semilla": 2026,
+      "pasos": 946,
+      "recompensa_total": 600.0,
+      "video": "agente-entrenado-space-invaders-episode-0.mp4"
+    },
+    {
+      "episodio": 1,
+      "semilla": 2027,
+      "pasos": 1439,
+      "recompensa_total": 1165.0,
+      "video": "agente-entrenado-space-invaders-episode-1.mp4"
+    },
+    {
+      "episodio": 2,
+      "semilla": 2028,
+      "pasos": 2068,
+      "recompensa_total": 1655.0,
+      "video": "agente-entrenado-space-invaders-episode-2.mp4"
+    },
+    {
+      "episodio": 3,
+      "semilla": 2029,
+      "pasos": 1957,
+      "recompensa_total": 1670.0,
+      "video": "agente-entrenado-space-invaders-episode-3.mp4"
+    },
+    {
+      "episodio": 4,
+      "semilla": 2030,
+      "pasos": 1075,
+      "recompensa_total": 600.0,
+      "video": "agente-entrenado-space-invaders-episode-4.mp4"
+    }
+  ],
+  "mejor": {
+    "episodio": 3,
+    "semilla": 2029,
+    "pasos": 1957,
+    "recompensa_total": 1670.0,
+    "video": "agente-entrenado-space-invaders-episode-3.mp4"
+  }
+}
