@@ -156,6 +156,78 @@ obs, _ = env.reset(seed=2026)
 accion = agente.actuar(obs, entrenando=False)   # entrenando=False => greedy, sin ruido
 ```
 
+## Resultados
+
+Corrida `rainbow_v1`: 4 000 000 pasos de agente (16 M frames) en un MacBook Pro
+M4 Pro con MPS, ~7.5 h a 125 pasos/s.
+
+### Evaluación final (configuración de la competencia)
+
+5 episodios, política greedy, sin clipping de recompensa, semillas 2026–2030
+(`entregables/evaluacion.json`):
+
+| Episodio | Puntaje | Pasos | Video |
+| --- | ---: | ---: | --- |
+| 0 | 600 | 946 | `agente-entrenado-space-invaders-episode-0.mp4` |
+| 1 | 1165 | 1439 | `agente-entrenado-space-invaders-episode-1.mp4` |
+| 2 | 1655 | 2068 | `agente-entrenado-space-invaders-episode-2.mp4` |
+| 3 | **1670** | 1957 | `agente-entrenado-space-invaders-episode-3.mp4` |
+| 4 | 600 | 1075 | `agente-entrenado-space-invaders-episode-4.mp4` |
+
+**Promedio 1138.0 · Máximo 1670 · Desviación 475.4**
+
+Comparación con los baselines del Laboratorio 5: agente aleatorio 109,
+agente de regla simple 391. El agente entrenado los supera por factores de
+10.4x y 2.9x en promedio.
+
+### Selección del checkpoint final
+
+El checkpoint entregado NO es el del final del entrenamiento sino el del paso
+2 400 000. La razón no es que aprenda mejor, sino cómo se mide la competencia:
+se toma el **máximo** de 5 episodios, no el promedio. Evaluando ambos con 15
+episodios (`entregables/eval15_*.json`) y estimando por bootstrap el máximo
+esperado de 5:
+
+| Checkpoint | Media | Desv. | E[máx de 5] | P(>1500) | P(>2000) |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Final, paso 4 000 000 | 1165 | 336 | 1547 | 78.8 % | 0.0 % |
+| **Paso 2 400 000** | 1026 | **496** | **1642** | 67.3 % | **29.0 %** |
+
+El checkpoint de 2.4 M tiene peor promedio pero una política más variable:
+falla más seguido y acierta más alto. Bajo una métrica de máximo sobre 5
+intentos esa cola larga vale más que la consistencia — el de 4 M nunca pasó de
+2000 en 15 episodios, mientras que el de 2.4 M lo hace el 29 % de las veces.
+Si la métrica fuera el promedio, la elección sería la contraria.
+
+### Curvas de entrenamiento
+
+![curvas](entregables/figuras/curvas_rainbow_v1.png)
+
+Tres observaciones:
+
+- La recompensa de entrenamiento **sigue subiendo a los 4 M pasos**, sin señal
+  de meseta. El límite fue el tiempo de cómputo disponible, no la capacidad del
+  agente.
+- La pérdida C51 cae de 3.6 a ~1.45 en los primeros 500 k pasos y se mantiene
+  estable el resto de la corrida: no hubo divergencia de los valores Q.
+- La evaluación greedy periódica es muy ruidosa porque usa solo 3 episodios
+  (rebota entre 573 y 1712). Esa varianza es del instrumento de medición, no
+  del agente; la media móvil de 50 episodios de entrenamiento es la señal
+  confiable.
+
+### Iteraciones
+
+| ID | Entorno de cómputo | Pasos | Cambios respecto a la anterior | Eval (promedio) | Eval (máximo) |
+| --- | --- | ---: | --- | ---: | ---: |
+| baseline-aleatorio | — | — | Política uniforme (Lab 5) | 109 | 215 |
+| baseline-regla | — | — | Heurística de alineación por color (Lab 5) | 391 | 380 |
+| rainbow_v1 | M4 Pro / MPS | 4 000 000 | Rainbow-lite completo | 1138 | 1670 |
+| rainbow_colab | Colab T4 / CUDA | 3 096 268 | Misma configuración, otro hardware | 1171 | 1570 |
+
+`rainbow_colab` se entrenó en paralelo para verificar que el resultado no
+dependiera de una semilla o de un dispositivo afortunado: dos corridas
+independientes en hardware distinto llegaron al mismo rango de puntaje.
+
 ## Baselines del Laboratorio 5
 
 Episodios grabados con semillas 42, 43 y 44 (`entregables/metricas.json`):
