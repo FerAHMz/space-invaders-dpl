@@ -1,0 +1,64 @@
+{
+  "modelo": "modelos/rainbow_v1.pt",
+  "preprocesamiento": {
+    "entorno": "ALE/SpaceInvaders-v5",
+    "frameskip_env": 1,
+    "frame_skip": 4,
+    "tamano_frame": 84,
+    "frames_apilados": 4,
+    "noop_max": 30,
+    "grayscale": true,
+    "repeat_action_probability": 0.25
+  },
+  "metadatos_entrenamiento": {
+    "paso": 4000000,
+    "mejor_promedio": 1711.6666666666667,
+    "etiqueta": "rainbow_v1"
+  },
+  "episodios": [
+    {
+      "episodio": 0,
+      "semilla": 2026,
+      "pasos": 2038,
+      "recompensa_total": 1585.0,
+      "terminated": true,
+      "truncated": false
+    },
+    {
+      "episodio": 1,
+      "semilla": 2027,
+      "pasos": 2107,
+      "recompensa_total": 1535.0,
+      "terminated": true,
+      "truncated": false
+    },
+    {
+      "episodio": 2,
+      "semilla": 2028,
+      "pasos": 1155,
+      "recompensa_total": 1110.0,
+      "terminated": true,
+      "truncated": false
+    },
+    {
+      "episodio": 3,
+      "semilla": 2029,
+      "pasos": 1368,
+      "recompensa_total": 1200.0,
+      "terminated": true,
+      "truncated": false
+    },
+    {
+      "episodio": 4,
+      "semilla": 2030,
+      "pasos": 769,
+      "recompensa_total": 570.0,
+      "terminated": true,
+      "truncated": false
+    }
+  ],
+  "promedio": 1200.0,
+  "maximo": 1585.0,
+  "minimo": 570.0,
+  "desviacion": 364.81502162054676
+}

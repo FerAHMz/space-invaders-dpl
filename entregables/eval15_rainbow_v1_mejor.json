@@ -1,0 +1,153 @@
+{
+  "modelo": "modelos/rainbow_v1_mejor.pt",
+  "preprocesamiento": {
+    "entorno": "ALE/SpaceInvaders-v5",
+    "frameskip_env": 1,
+    "frame_skip": 4,
+    "tamano_frame": 84,
+    "frames_apilados": 4,
+    "noop_max": 30,
+    "grayscale": true,
+    "repeat_action_probability": 0.25
+  },
+  "metadatos_entrenamiento": {
+    "paso": 2400000,
+    "mejor_promedio": 1711.6666666666667,
+    "etiqueta": "rainbow_v1",
+    "eval": {
+      "puntajes": [
+        2005.0,
+        1430.0,
+        1700.0
+      ],
+      "promedio": 1711.6666666666667,
+      "maximo": 2005.0
+    }
+  },
+  "episodios": [
+    {
+      "episodio": 0,
+      "semilla": 7000,
+      "pasos": 1433,
+      "recompensa_total": 1085.0,
+      "terminated": true,
+      "truncated": false
+    },
+    {
+      "episodio": 1,
+      "semilla": 7001,
+      "pasos": 1695,
+      "recompensa_total": 1230.0,
+      "terminated": true,
+      "truncated": false
+    },
+    {
+      "episodio": 2,
+      "semilla": 7002,
+      "pasos": 917,
+      "recompensa_total": 600.0,
+      "terminated": true,
+      "truncated": false
+    },
+    {
+      "episodio": 3,
+      "semilla": 7003,
+      "pasos": 799,
+      "recompensa_total": 550.0,
+      "terminated": true,
+      "truncated": false
+    },
+    {
+      "episodio": 4,
+      "semilla": 7004,
+      "pasos": 601,
+      "recompensa_total": 380.0,
+      "terminated": true,
+      "truncated": false
+    },
+    {
+      "episodio": 5,
+      "semilla": 7005,
+      "pasos": 959,
+      "recompensa_total": 775.0,
+      "terminated": true,
+      "truncated": false
+    },
+    {
+      "episodio": 6,
+      "semilla": 7006,
+      "pasos": 588,
+      "recompensa_total": 400.0,
+      "terminated": true,
+      "truncated": false
+    },
+    {
+      "episodio": 7,
+      "semilla": 7007,
+      "pasos": 1658,
+      "recompensa_total": 1120.0,
+      "terminated": true,
+      "truncated": false
+    },
+    {
+      "episodio": 8,
+      "semilla": 7008,
+      "pasos": 2104,
+      "recompensa_total": 1835.0,
+      "terminated": true,
+      "truncated": false
+    },
+    {
+      "episodio": 9,
+      "semilla": 7009,
+      "pasos": 1570,
+      "recompensa_total": 1110.0,
+      "terminated": true,
+      "truncated": false
+    },
+    {
+      "episodio": 10,
+      "semilla": 7010,
+      "pasos": 2127,
+      "recompensa_total": 1650.0,
+      "terminated": true,
+      "truncated": false
+    },
+    {
+      "episodio": 11,
+      "semilla": 7011,
+      "pasos": 1783,
+      "recompensa_total": 1135.0,
+      "terminated": true,
+      "truncated": false
+    },
+    {
+      "episodio": 12,
+      "semilla": 7012,
+      "pasos": 1082,
+      "recompensa_total": 580.0,
+      "terminated": true,
+      "truncated": false
+    },
+    {
+      "episodio": 13,
+      "semilla": 7013,
+      "pasos": 2767,
+      "recompensa_total": 2060.0,
+      "terminated": true,
+      "truncated": false
+    },
+    {
+      "episodio": 14,
+      "semilla": 7014,
+      "pasos": 1361,
+      "recompensa_total": 885.0,
+      "terminated": true,
+      "truncated": false
+    }
+  ],
+  "promedio": 1026.3333333333333,
+  "maximo": 2060.0,
+  "minimo": 380.0,
+  "desviacion": 495.6425683449269
+}
