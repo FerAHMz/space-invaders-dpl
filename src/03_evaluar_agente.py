@@ -20,6 +20,7 @@ from ale_utils import fijar_semillas
 from config import (
     CHECKPOINT_FINAL,
     DIR_ENTREGABLES,
+    RAIZ,
     EPISODIOS_EVALUACION,
     MAX_STEPS_EVALUACION,
     SEMILLA_EVALUACION,
@@ -62,8 +63,14 @@ def evaluar_agente(
         env.close()
 
     puntajes = [e["recompensa_total"] for e in episodios]
+    # Ruta relativa a la raiz del repo: el JSON se versiona y una ruta absoluta
+    # solo tiene sentido en la maquina que lo genero.
+    try:
+        ruta_reportada = str(Path(ruta_modelo).resolve().relative_to(RAIZ))
+    except ValueError:
+        ruta_reportada = str(ruta_modelo)
     return {
-        "modelo": str(ruta_modelo),
+        "modelo": ruta_reportada,
         "preprocesamiento": getattr(agente, "preprocesamiento", {}),
         "metadatos_entrenamiento": getattr(agente, "metadatos", {}),
         "episodios": episodios,

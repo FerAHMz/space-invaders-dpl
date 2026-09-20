@@ -22,7 +22,8 @@
       ],
       "promedio": 1711.6666666666667,
       "maximo": 2005.0
-    }
+    },
+    "nota": "checkpoint de inferencia: sin estado del optimizador"
   },
   "episodios": [
     {
