@@ -65,6 +65,33 @@ def grabar_partidas(
     return {"episodios": episodios, "mejor": mejor}
 
 
+def tabla_markdown(episodios: list, mejor: dict) -> str:
+    """Arma la tabla de resultados lista para pegar en el reporte.
+
+    Junta en una sola vista el puntaje de cada episodio y el video que lo
+    respalda, que es exactamente lo que pide el enunciado: el video debe ser
+    evidencia del puntaje reportado.
+    """
+    import statistics
+
+    puntajes = [e["recompensa_total"] for e in episodios]
+    filas = ["| Episodio | Semilla | Puntaje | Pasos | Video |",
+             "| ---: | ---: | ---: | ---: | --- |"]
+    for e in episodios:
+        marca = "**" if e is mejor else ""
+        filas.append(
+            f"| {e['episodio']} | {e['semilla']} | {marca}{e['recompensa_total']:.0f}{marca} "
+            f"| {e['pasos']} | `{e['video']}` |"
+        )
+    desviacion = statistics.pstdev(puntajes) if len(puntajes) > 1 else 0.0
+    filas.append("")
+    filas.append(
+        f"**Promedio {statistics.mean(puntajes):.1f} · "
+        f"Maximo {max(puntajes):.0f} · Desviacion {desviacion:.1f}**"
+    )
+    return "\n".join(filas)
+
+
 def main() -> dict:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--modelo", type=Path, default=CHECKPOINT_FINAL)
@@ -82,6 +109,14 @@ def main() -> dict:
     salida = DIR_ENTREGABLES / "video_agente.json"
     salida.write_text(json.dumps(resultado, indent=2, ensure_ascii=False))
     mejor = resultado["mejor"]
+
+    tabla = tabla_markdown(resultado["episodios"], mejor)
+    ruta_tabla = DIR_ENTREGABLES / "tabla_resultados.md"
+    ruta_tabla.write_text(tabla + "\n")
+    print()
+    print(tabla)
+    print()
+    print(f"Tabla escrita en {ruta_tabla.relative_to(RAIZ)}")
     print(f"\nMejor partida: {mejor['recompensa_total']:.0f} puntos en {mejor['video']}")
     print(f"Metadatos en {salida.relative_to(RAIZ)}")
     return resultado
